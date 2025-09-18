@@ -1,0 +1,191 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Vue.js + Express.js App</title>
+    <script src="https://unpkg.com/vue@3/dist/vue.global.prod.js"></script>
+    <style>
+        body {
+            font-family: Arial, sans-serif;
+            margin: 0;
+            padding: 20px;
+            background-color: #f5f5f5;
+        }
+        .container {
+            max-width: 800px;
+            margin: 0 auto;
+            background: white;
+            padding: 20px;
+            border-radius: 8px;
+            box-shadow: 0 2px 10px rgba(0,0,0,0.1);
+        }
+        h1 {
+            color: #2c3e50;
+            text-align: center;
+        }
+        .api-section {
+            margin: 30px 0;
+            padding: 20px;
+            background: #f8f9fa;
+            border-radius: 5px;
+        }
+        button {
+            background: #007bff;
+            color: white;
+            padding: 10px 20px;
+            border: none;
+            border-radius: 5px;
+            cursor: pointer;
+            margin-right: 10px;
+            margin-bottom: 10px;
+        }
+        button:hover {
+            background: #0056b3;
+        }
+        .response {
+            background: #e9ecef;
+            padding: 15px;
+            border-radius: 5px;
+            margin-top: 10px;
+            white-space: pre-wrap;
+        }
+        .user-form {
+            display: grid;
+            gap: 10px;
+            max-width: 300px;
+            margin: 20px 0;
+        }
+        input {
+            padding: 8px;
+            border: 1px solid #ddd;
+            border-radius: 3px;
+        }
+        .users-list {
+            margin-top: 20px;
+        }
+        .user-item {
+            background: white;
+            padding: 10px;
+            margin: 5px 0;
+            border: 1px solid #ddd;
+            border-radius: 5px;
+        }
+    </style>
+</head>
+<body>
+    <div id="app">
+        <div class="container">
+            <h1>{{ title }}</h1>
+            
+            <div class="api-section">
+                <h3>Hello API</h3>
+                <button @click="fetchHello">Get Hello Message</button>
+                <div v-if="helloResponse" class="response">{{ helloResponse }}</div>
+            </div>
+            
+            <div class="api-section">
+                <h3>Users API</h3>
+                <button @click="fetchUsers">Get All Users</button>
+                
+                <div class="user-form">
+                    <h4>Add New User</h4>
+                    <input v-model="newUser.name" placeholder="Name" />
+                    <input v-model="newUser.email" placeholder="Email" />
+                    <button @click="addUser">Add User</button>
+                </div>
+                
+                <div v-if="users.length > 0" class="users-list">
+                    <h4>Users:</h4>
+                    <div v-for="user in users" :key="user.id" class="user-item">
+                        <strong>{{ user.name }}</strong> - {{ user.email }}
+                    </div>
+                </div>
+                
+                <div v-if="userResponse" class="response">{{ userResponse }}</div>
+            </div>
+            
+            <div class="api-section">
+                <h3>API Documentation</h3>
+                <p>View the complete API documentation with Swagger UI:</p>
+                <a href="/docs" target="_blank" style="display: inline-block; background: #28a745; color: white; padding: 10px 20px; text-decoration: none; border-radius: 5px;">Open Swagger UI</a>
+            </div>
+        </div>
+    </div>
+
+    <script>
+        const { createApp } = Vue;
+        
+        createApp({
+            data() {
+                return {
+                    title: 'Vue.js + Express.js Application',
+                    helloResponse: null,
+                    users: [],
+                    userResponse: null,
+                    newUser: {
+                        name: '',
+                        email: ''
+                    }
+                }
+            },
+            methods: {
+                async fetchHello() {
+                    try {
+                        const response = await fetch('/api/hello');
+                        const data = await response.json();
+                        this.helloResponse = JSON.stringify(data, null, 2);
+                    } catch (error) {
+                        this.helloResponse = 'Error: ' + error.message;
+                    }
+                },
+                async fetchUsers() {
+                    try {
+                        const response = await fetch('/api/users');
+                        const data = await response.json();
+                        this.users = data;
+                        this.userResponse = null;
+                    } catch (error) {
+                        this.userResponse = 'Error: ' + error.message;
+                    }
+                },
+                async addUser() {
+                    if (!this.newUser.name || !this.newUser.email) {
+                        this.userResponse = 'Please fill in both name and email';
+                        return;
+                    }
+                    
+                    try {
+                        const response = await fetch('/api/users', {
+                            method: 'POST',
+                            headers: {
+                                'Content-Type': 'application/json',
+                            },
+                            body: JSON.stringify(this.newUser)
+                        });
+                        
+                        if (response.ok) {
+                            const newUser = await response.json();
+                            this.userResponse = 'User created successfully: ' + JSON.stringify(newUser, null, 2);
+                            this.newUser.name = '';
+                            this.newUser.email = '';
+                            // Refresh the users list
+                            this.fetchUsers();
+                        } else {
+                            const error = await response.json();
+                            this.userResponse = 'Error: ' + error.error;
+                        }
+                    } catch (error) {
+                        this.userResponse = 'Error: ' + error.message;
+                    }
+                }
+            },
+            mounted() {
+                // Load initial data
+                this.fetchHello();
+                this.fetchUsers();
+            }
+        }).mount('#app');
+    </script>
+</body>
+</html>
