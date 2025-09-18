@@ -4,74 +4,8 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Vue.js + Express.js App</title>
+    <link rel="stylesheet" href="/css/style.css">
     <script src="https://unpkg.com/vue@3/dist/vue.global.prod.js"></script>
-    <style>
-        body {
-            font-family: Arial, sans-serif;
-            margin: 0;
-            padding: 20px;
-            background-color: #f5f5f5;
-        }
-        .container {
-            max-width: 800px;
-            margin: 0 auto;
-            background: white;
-            padding: 20px;
-            border-radius: 8px;
-            box-shadow: 0 2px 10px rgba(0,0,0,0.1);
-        }
-        h1 {
-            color: #2c3e50;
-            text-align: center;
-        }
-        .api-section {
-            margin: 30px 0;
-            padding: 20px;
-            background: #f8f9fa;
-            border-radius: 5px;
-        }
-        button {
-            background: #007bff;
-            color: white;
-            padding: 10px 20px;
-            border: none;
-            border-radius: 5px;
-            cursor: pointer;
-            margin-right: 10px;
-            margin-bottom: 10px;
-        }
-        button:hover {
-            background: #0056b3;
-        }
-        .response {
-            background: #e9ecef;
-            padding: 15px;
-            border-radius: 5px;
-            margin-top: 10px;
-            white-space: pre-wrap;
-        }
-        .user-form {
-            display: grid;
-            gap: 10px;
-            max-width: 300px;
-            margin: 20px 0;
-        }
-        input {
-            padding: 8px;
-            border: 1px solid #ddd;
-            border-radius: 3px;
-        }
-        .users-list {
-            margin-top: 20px;
-        }
-        .user-item {
-            background: white;
-            padding: 10px;
-            margin: 5px 0;
-            border: 1px solid #ddd;
-            border-radius: 5px;
-        }
-    </style>
 </head>
 <body>
     <div id="app">
@@ -113,79 +47,6 @@
         </div>
     </div>
 
-    <script>
-        const { createApp } = Vue;
-        
-        createApp({
-            data() {
-                return {
-                    title: 'Vue.js + Express.js Application',
-                    helloResponse: null,
-                    users: [],
-                    userResponse: null,
-                    newUser: {
-                        name: '',
-                        email: ''
-                    }
-                }
-            },
-            methods: {
-                async fetchHello() {
-                    try {
-                        const response = await fetch('/api/hello');
-                        const data = await response.json();
-                        this.helloResponse = JSON.stringify(data, null, 2);
-                    } catch (error) {
-                        this.helloResponse = 'Error: ' + error.message;
-                    }
-                },
-                async fetchUsers() {
-                    try {
-                        const response = await fetch('/api/users');
-                        const data = await response.json();
-                        this.users = data;
-                        this.userResponse = null;
-                    } catch (error) {
-                        this.userResponse = 'Error: ' + error.message;
-                    }
-                },
-                async addUser() {
-                    if (!this.newUser.name || !this.newUser.email) {
-                        this.userResponse = 'Please fill in both name and email';
-                        return;
-                    }
-                    
-                    try {
-                        const response = await fetch('/api/users', {
-                            method: 'POST',
-                            headers: {
-                                'Content-Type': 'application/json',
-                            },
-                            body: JSON.stringify(this.newUser)
-                        });
-                        
-                        if (response.ok) {
-                            const newUser = await response.json();
-                            this.userResponse = 'User created successfully: ' + JSON.stringify(newUser, null, 2);
-                            this.newUser.name = '';
-                            this.newUser.email = '';
-                            // Refresh the users list
-                            this.fetchUsers();
-                        } else {
-                            const error = await response.json();
-                            this.userResponse = 'Error: ' + error.error;
-                        }
-                    } catch (error) {
-                        this.userResponse = 'Error: ' + error.message;
-                    }
-                }
-            },
-            mounted() {
-                // Load initial data
-                this.fetchHello();
-                this.fetchUsers();
-            }
-        }).mount('#app');
-    </script>
+    <script src="/js/app.js"></script>
 </body>
 </html>
