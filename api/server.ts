@@ -1,5 +1,5 @@
 import express from 'express';
-import swaggerJsdoc from 'swagger-jsdoc';
+import swaggerJsdoc, { Options } from 'swagger-jsdoc';
 import swaggerUi from 'swagger-ui-express';
 import cors from 'cors';
 import path from 'path';
@@ -11,10 +11,16 @@ const PORT = process.env.PORT || 5000;
 // Middleware
 app.use(cors());
 app.use(express.json());
-app.use(express.static(path.join(__dirname, '..', '..', 'public')));
+const publicDir = path.resolve(process.cwd(), 'public');
+app.use(express.static(publicDir));
 
 // Swagger configuration
-const swaggerOptions: any = {
+const apis = [
+  path.join(process.cwd(), 'api/**/*.ts'),
+  path.join(process.cwd(), 'dist/api/**/*.js')
+];
+
+const swaggerOptions: Options = {
   definition: {
     openapi: '3.0.0',
     info: {
@@ -29,7 +35,7 @@ const swaggerOptions: any = {
       },
     ],
   },
-  apis: ['./api/user/index.ts', './api/server.ts'], // Path to the API docs
+  apis,
 };
 
 const swaggerSpec = swaggerJsdoc(swaggerOptions);
@@ -68,7 +74,7 @@ app.use('/api', userRouter);
 
 // Serve Vue.js frontend for the root route
 app.get('/', (req: express.Request, res: express.Response) => {
-  res.sendFile(path.join(__dirname, '..', '..', 'public', 'index.html'));
+  res.sendFile(path.join(publicDir, 'index.html'));
 });
 
 export { app, PORT };
