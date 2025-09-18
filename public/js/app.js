@@ -1,5 +1,5 @@
+"use strict";
 const { createApp } = Vue;
-
 createApp({
     data() {
         return {
@@ -11,7 +11,7 @@ createApp({
                 name: '',
                 email: ''
             }
-        }
+        };
     },
     methods: {
         async fetchHello() {
@@ -19,7 +19,8 @@ createApp({
                 const response = await fetch('/api/hello');
                 const data = await response.json();
                 this.helloResponse = JSON.stringify(data, null, 2);
-            } catch (error) {
+            }
+            catch (error) {
                 this.helloResponse = 'Error: ' + error.message;
             }
         },
@@ -29,7 +30,8 @@ createApp({
                 const data = await response.json();
                 this.users = data;
                 this.userResponse = null;
-            } catch (error) {
+            }
+            catch (error) {
                 this.userResponse = 'Error: ' + error.message;
             }
         },
@@ -38,7 +40,6 @@ createApp({
                 this.userResponse = 'Please fill in both name and email';
                 return;
             }
-            
             try {
                 const response = await fetch('/api/users', {
                     method: 'POST',
@@ -47,7 +48,6 @@ createApp({
                     },
                     body: JSON.stringify(this.newUser)
                 });
-                
                 if (response.ok) {
                     const newUser = await response.json();
                     this.userResponse = 'User created successfully: ' + JSON.stringify(newUser, null, 2);
@@ -55,11 +55,13 @@ createApp({
                     this.newUser.email = '';
                     // Refresh the users list
                     this.fetchUsers();
-                } else {
+                }
+                else {
                     const error = await response.json();
                     this.userResponse = 'Error: ' + error.error;
                 }
-            } catch (error) {
+            }
+            catch (error) {
                 this.userResponse = 'Error: ' + error.message;
             }
         }
@@ -70,3 +72,4 @@ createApp({
         this.fetchUsers();
     }
 }).mount('#app');
+//# sourceMappingURL=app.js.map
