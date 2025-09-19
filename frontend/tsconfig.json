@@ -1,6 +1,6 @@
 {
   "compilerOptions": {
-    "outDir": "../../public/js",
+    "outDir": "../../dist/frontend",
     "rootDir": ".",
     "module": "None",
     "target": "ES2020",
@@ -12,5 +12,5 @@
     "sourceMap": true
   },
   "include": ["**/*.ts"],
-  "exclude": ["node_modules"]
+  "exclude": ["node_modules", "../../node_modules/@types/node"]
 }

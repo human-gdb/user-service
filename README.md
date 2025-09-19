@@ -55,17 +55,19 @@ user-service/
 │   │   └── user.ts           # User CRUD operations
 │   └── types.ts              # TypeScript type definitions
 ├── 📁 dist/                  # Compiled JavaScript (generated)
-│   ├── 📁 api/               # Compiled API routes
-│   └── server.js             # Compiled server file
+│   ├── 📁 api/               # Compiled backend code
+│   │   ├── 📁 api/           # Compiled API routes
+│   │   ├── 📁 user/          # Compiled user routes
+│   │   └── server.js         # Compiled server file
+│   └── 📁 frontend/          # Compiled frontend code
+│       └── app.js            # Compiled Vue.js application
 ├── 📁 frontend/              # Frontend source code
 │   ├── app.ts                # Vue.js TypeScript application
 │   └── tsconfig.json         # Frontend TypeScript config
 ├── 📁 public/                # Static assets (served by Express)
 │   ├── index.html            # Main HTML template
-│   ├── 📁 css/               # Stylesheets
-│   │   └── style.css         # Main styles
-│   └── 📁 js/                # Compiled JavaScript
-│       └── app.js            # Compiled frontend code
+│   └── 📁 css/               # Stylesheets
+│       └── style.css         # Main styles
 ├── 📁 node_modules/          # Dependencies (generated)
 ├── server.ts                 # Main server file (consolidated)
 ├── tsconfig.json             # Backend TypeScript config
@@ -89,9 +91,10 @@ user-service/
 - **API Communication**: Native Fetch API
 
 ### Build Process
-1. **Backend**: TypeScript → JavaScript in `dist/` folder
-2. **Frontend**: TypeScript → JavaScript in `public/js/` folder
+1. **Backend**: TypeScript → JavaScript in `dist/api/` folder
+2. **Frontend**: TypeScript → JavaScript in `dist/frontend/` folder
 3. **Static Assets**: Served directly from `public/` folder
+4. **Frontend JS**: Served from `dist/frontend/` via `/js` route
 
 ## 🌐 API Endpoints
 

@@ -12,7 +12,9 @@ const PORT = process.env.PORT || 8080;
 app.use(cors());
 app.use(express.json());
 const publicDir = path.resolve(process.cwd(), 'public');
+const frontendDir = path.resolve(process.cwd(), 'dist/frontend');
 app.use(express.static(publicDir));
+app.use('/js', express.static(frontendDir));
 
 // Swagger configuration
 const apis = [

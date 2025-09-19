@@ -2,7 +2,7 @@
   "compilerOptions": {
     "target": "ES2020",
     "module": "commonjs",
-    "outDir": "dist",
+    "outDir": "dist/api",
     "rootDir": ".",
     "strict": true,
     "esModuleInterop": true,
@@ -13,6 +13,6 @@
     "declaration": false,
     "removeComments": false
   },
-  "include": ["**/*.ts"],
+  "include": ["server.ts", "api/**/*.ts"],
   "exclude": ["node_modules", "dist", "public", "*.log", "/tmp/**", "**/*.tmp", "**/*.temp"]
 }
