@@ -26,7 +26,7 @@ Preferred communication style: Simple, everyday language.
 - **Main Server**: `/api/server.js` - Core server configuration and middleware
 - **User Routes**: `/api/user/index.js` - User management endpoints
 - **Static Assets**: Served from `/public` directory
-- **Documentation**: Swagger UI available at `/docs` endpoint
+- **Documentation**: Swagger UI available at `/swagger` endpoint
 
 ## API Design Patterns
 - **RESTful Endpoints**: Standard HTTP methods (GET, POST) for resource operations

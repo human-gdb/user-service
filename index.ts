@@ -5,5 +5,5 @@ const finalPort = Number.isNaN(port) ? 5000 : port;
 
 app.listen(finalPort, '0.0.0.0', () => {
   console.log(`Server running on http://localhost:${finalPort}`);
-  console.log(`Swagger UI available at http://localhost:${finalPort}/docs`);
+  console.log(`Swagger UI available at http://localhost:${finalPort}/swagger`);
 });
