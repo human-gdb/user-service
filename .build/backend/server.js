@@ -9,6 +9,7 @@ const swagger_ui_express_1 = __importDefault(require("swagger-ui-express"));
 const cors_1 = __importDefault(require("cors"));
 const path_1 = __importDefault(require("path"));
 const user_1 = __importDefault(require("./api/user/user"));
+const search_1 = __importDefault(require("./api/search/search"));
 const app = (0, express_1.default)();
 const PORT = process.env.PORT || 8080;
 // Middleware
@@ -69,8 +70,9 @@ app.get('/api/hello', (req, res) => {
         timestamp: new Date().toISOString()
     });
 });
-// Use user router
+// Use routers
 app.use('/api', user_1.default);
+app.use('/api/search', search_1.default);
 // Serve Vue.js frontend for the root route
 app.get('/', (req, res) => {
     res.sendFile(path_1.default.join(frontendDir, 'index.html'));

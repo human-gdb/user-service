@@ -4,6 +4,7 @@ import swaggerUi from 'swagger-ui-express';
 import cors from 'cors';
 import path from 'path';
 import userRouter from './api/user/user';
+import searchRouter from './api/search/search';
 
 const app = express();
 const PORT = process.env.PORT || 8080;
@@ -72,8 +73,9 @@ app.get('/api/hello', (req: express.Request, res: express.Response) => {
   });
 });
 
-// Use user router
+// Use routers
 app.use('/api', userRouter);
+app.use('/api/search', searchRouter);
 
 // Serve Vue.js frontend for the root route
 app.get('/', (req: express.Request, res: express.Response) => {
