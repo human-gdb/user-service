@@ -2,7 +2,7 @@
   "compilerOptions": {
     "target": "ES2020",
     "module": "commonjs",
-    "outDir": "dist/backend",
+    "outDir": ".build/backend",
     "rootDir": "backend",
     "strict": true,
     "esModuleInterop": true,
@@ -14,5 +14,5 @@
     "removeComments": false
   },
   "include": ["backend/**/*.ts"],
-  "exclude": ["node_modules", "dist", "public", "*.log", "/tmp/**", "**/*.tmp", "**/*.temp"]
+  "exclude": ["node_modules", ".build", "public", "*.log", "/tmp/**", "**/*.tmp", "**/*.temp"]
 }

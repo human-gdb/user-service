@@ -12,15 +12,15 @@ const PORT = process.env.PORT || 8080;
 app.use(cors());
 app.use(express.json());
 const frontendDir = path.resolve(process.cwd(), 'frontend');
-const frontendDistDir = path.resolve(process.cwd(), 'dist/frontend');
+const frontendBuildDir = path.resolve(process.cwd(), '.build/frontend');
 app.use(express.static(frontendDir));
-app.use('/js', express.static(frontendDistDir));
+app.use('/js', express.static(frontendBuildDir));
 app.use('/css', express.static(frontendDir));
 
 // Swagger configuration
 const apis = [
   path.join(process.cwd(), 'backend/api/**/*.ts'),
-  path.join(process.cwd(), 'dist/backend/api/**/*.js')
+  path.join(process.cwd(), '.build/backend/api/**/*.js')
 ];
 
 const swaggerOptions: Options = {

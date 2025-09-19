@@ -1,3 +1,4 @@
+// Vue.js application
 declare const Vue: any;
 
 interface User {
