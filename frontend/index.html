@@ -40,6 +40,56 @@
             </div>
             
             <div class="api-section">
+                <h3>Fairy Tale Search</h3>
+                <div v-if="searchStats" class="search-stats">
+                    <p><strong>{{ searchStats.totalTales }}</strong> fairy tales available from <a :href="searchStats.baseUrl" target="_blank">Grimm's Fairy Tales</a></p>
+                </div>
+                
+                <div class="search-form">
+                    <div class="search-input-group">
+                        <input 
+                            v-model="searchQuery" 
+                            @keyup.enter="searchFairyTales"
+                            placeholder="Search for words in fairy tales..." 
+                            :disabled="isSearching"
+                        />
+                        <button @click="searchFairyTales" :disabled="isSearching || !searchQuery.trim()">
+                            <span v-if="isSearching">Searching...</span>
+                            <span v-else>Search</span>
+                        </button>
+                        <button @click="clearSearch" class="clear-btn" :disabled="isSearching">Clear</button>
+                    </div>
+                </div>
+                
+                <div v-if="searchResponse" class="response">{{ searchResponse }}</div>
+                
+                <div v-if="searchResults.length > 0" class="search-results">
+                    <h4>Search Results:</h4>
+                    <div v-for="result in searchResults" :key="result.tale.id" class="search-result">
+                        <div class="result-header">
+                            <h5>{{ result.tale.title }}</h5>
+                            <span class="relevance-score">Relevance: {{ Math.round(result.relevanceScore) }}</span>
+                        </div>
+                        <div class="result-matches">
+                            <div v-for="(match, index) in result.matches.slice(0, 3)" :key="index" class="match-item">
+                                <div class="match-line">
+                                    <span class="line-number">Line {{ match.lineNumber }}:</span>
+                                    <span class="match-text" v-html="highlightMatch(match.line, searchQuery)"></span>
+                                </div>
+                                <div class="match-context">{{ match.context }}</div>
+                            </div>
+                            <div v-if="result.matches.length > 3" class="more-matches">
+                                ... and {{ result.matches.length - 3 }} more matches
+                            </div>
+                        </div>
+                        <div class="result-actions">
+                            <a :href="result.tale.url" target="_blank" class="view-tale-btn">View Full Tale</a>
+                        </div>
+                    </div>
+                </div>
+            </div>
+            
+            <div class="api-section">
                 <h3>API Documentation</h3>
                 <p>View the complete API documentation with Swagger UI:</p>
                 <a href="/swagger" target="_blank" style="display: inline-block; background: #28a745; color: white; padding: 10px 20px; text-decoration: none; border-radius: 5px;">Open Swagger UI</a>
