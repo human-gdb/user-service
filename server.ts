@@ -3,10 +3,10 @@ import swaggerJsdoc, { Options } from 'swagger-jsdoc';
 import swaggerUi from 'swagger-ui-express';
 import cors from 'cors';
 import path from 'path';
-import userRouter from './user';
+import userRouter from './api/user/user';
 
 const app = express();
-const PORT = process.env.PORT || 5000;
+const PORT = process.env.PORT || 8080;
 
 // Middleware
 app.use(cors());
@@ -77,4 +77,34 @@ app.get('/', (req: express.Request, res: express.Response) => {
   res.sendFile(path.join(publicDir, 'index.html'));
 });
 
-export { app, PORT };
+// Server startup and error handling
+const port = Number(PORT);
+const server = app.listen(port, '0.0.0.0', () => {
+  console.log(`Server running on http://localhost:${port}`);
+  console.log(`Swagger UI available at http://localhost:${port}/swagger`);
+});
+
+server.on('error', (error: any) => {
+  console.error('Server error:', error);
+  if (error.code === 'EADDRINUSE') {
+    console.error(`Port ${port} is already in use. Please try a different port.`);
+  }
+  process.exit(1);
+});
+
+// Graceful shutdown
+process.on('SIGTERM', () => {
+  console.log('SIGTERM received, shutting down gracefully');
+  server.close(() => {
+    console.log('Server closed');
+    process.exit(0);
+  });
+});
+
+process.on('SIGINT', () => {
+  console.log('SIGINT received, shutting down gracefully');
+  server.close(() => {
+    console.log('Server closed');
+    process.exit(0);
+  });
+});
