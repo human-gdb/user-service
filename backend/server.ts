@@ -11,15 +11,16 @@ const PORT = process.env.PORT || 8080;
 // Middleware
 app.use(cors());
 app.use(express.json());
-const publicDir = path.resolve(process.cwd(), 'public');
-const frontendDir = path.resolve(process.cwd(), 'dist/frontend');
-app.use(express.static(publicDir));
-app.use('/js', express.static(frontendDir));
+const frontendDir = path.resolve(process.cwd(), 'frontend');
+const frontendDistDir = path.resolve(process.cwd(), 'dist/frontend');
+app.use(express.static(frontendDir));
+app.use('/js', express.static(frontendDistDir));
+app.use('/css', express.static(frontendDir));
 
 // Swagger configuration
 const apis = [
-  path.join(process.cwd(), 'api/**/*.ts'),
-  path.join(process.cwd(), 'dist/api/**/*.js')
+  path.join(process.cwd(), 'backend/api/**/*.ts'),
+  path.join(process.cwd(), 'dist/backend/api/**/*.js')
 ];
 
 const swaggerOptions: Options = {
@@ -76,7 +77,7 @@ app.use('/api', userRouter);
 
 // Serve Vue.js frontend for the root route
 app.get('/', (req: express.Request, res: express.Response) => {
-  res.sendFile(path.join(publicDir, 'index.html'));
+  res.sendFile(path.join(frontendDir, 'index.html'));
 });
 
 // Server startup and error handling

@@ -7,8 +7,8 @@
     "build": "npm run build:backend && npm run build:frontend",
     "build:backend": "tsc",
     "build:frontend": "tsc -p frontend/tsconfig.json",
-    "start": "node dist/api/server.js",
-    "dev": "npm run build:frontend && ts-node-dev --respawn --transpile-only server.ts",
+    "start": "node dist/backend/server.js",
+    "dev": "npm run build:frontend && ts-node-dev --respawn --transpile-only backend/server.ts",
     "test": "echo \"Error: no test specified\" && exit 1"
   },
   "keywords": [],
