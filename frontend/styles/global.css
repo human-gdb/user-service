@@ -1,0 +1,6 @@
+/* Vuetify-only styles - no custom global styles */
+
+/* Only essential Vuetify overrides if absolutely necessary */
+.v-application {
+    font-family: 'Roboto', sans-serif;
+}

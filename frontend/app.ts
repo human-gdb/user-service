@@ -1,87 +1,52 @@
-// Vue.js application
+// Vue.js application with Angular-like structure
 declare const Vue: any;
 
-interface User {
-  id: number;
-  name: string;
-  email: string;
-}
+// Import services
+import { HelloService } from './services/hello.service';
+import { UserService } from './services/user.service';
+import { SearchService } from './services/search.service';
 
-interface NewUser {
-  name: string;
-  email: string;
-}
-
-interface HelloResponse {
-  message: string;
-  timestamp: string;
-}
-
-interface ErrorResponse {
-  error: string;
-}
-
-// Search API types
-interface FairyTale {
-  id: string;
-  title: string;
-  url: string;
-  content: string;
-}
-
-interface SearchMatch {
-  line: string;
-  lineNumber: number;
-  context: string;
-}
-
-interface SearchResult {
-  tale: FairyTale;
-  matches: SearchMatch[];
-  relevanceScore: number;
-}
-
-interface SearchResponse {
-  results: SearchResult[];
-  totalResults: number;
-  query: string;
-  searchTime: number;
-}
+// Import models
+import { User, NewUser } from './models/user.model';
+import { SearchResult, SearchStats } from './models/search.model';
+import { HelloResponse } from './models/hello.model';
 
 interface AppData {
   title: string;
+  // Reactive data properties
   helloResponse: string | null;
   users: User[];
   userResponse: string | null;
   newUser: NewUser;
-  // Search properties
   searchQuery: string;
   searchResults: SearchResult[];
   searchResponse: string | null;
   isSearching: boolean;
-  searchStats: {
-    totalTales: number;
-    isInitialized: boolean;
-    baseUrl: string;
-  } | null;
+  searchStats: SearchStats | null;
 }
 
 interface AppMethods {
   fetchHello(): Promise<void>;
   fetchUsers(): Promise<void>;
   addUser(): Promise<void>;
-  // Search methods
   searchFairyTales(): Promise<void>;
   fetchSearchStats(): Promise<void>;
   clearSearch(): void;
+  highlightMatch(text: string, query: string): string;
 }
 
 const { createApp } = Vue;
+
+// Initialize services
+const helloService = new HelloService();
+const userService = new UserService();
+const searchService = new SearchService();
 
 createApp({
   data(): AppData {
     return {
       title: 'Vue.js + Express.js Application',
+      // Initialize reactive data
       helloResponse: null,
       users: [],
       userResponse: null,
@@ -89,7 +54,6 @@ createApp({
         name: '',
         email: ''
       },
-      // Search properties
       searchQuery: '',
       searchResults: [],
       searchResponse: null,
@@ -98,20 +62,20 @@ createApp({
     };
   },
   methods: {
+    // Hello API methods
     async fetchHello(this: AppData & AppMethods): Promise<void> {
       try {
-        const response = await fetch('/api/hello');
-        const data: HelloResponse = await response.json();
+        const data: HelloResponse = await helloService.getHello();
         this.helloResponse = JSON.stringify(data, null, 2);
       } catch (error: any) {
         this.helloResponse = 'Error: ' + error.message;
       }
     },
+    
+    // User API methods
     async fetchUsers(this: AppData & AppMethods): Promise<void> {
       try {
-        const response = await fetch('/api/users');
-        const data: User[] = await response.json();
-        this.users = data;
+        this.users = await userService.getUsers();
         this.userResponse = null;
       } catch (error: any) {
         this.userResponse = 'Error: ' + error.message;
@@ -124,30 +88,18 @@ createApp({
       }
       
       try {
-        const response = await fetch('/api/users', {
-          method: 'POST',
-          headers: {
-            'Content-Type': 'application/json',
-          },
-          body: JSON.stringify(this.newUser)
-        });
-        
-        if (response.ok) {
-          const newUser: User = await response.json();
-          this.userResponse = 'User created successfully: ' + JSON.stringify(newUser, null, 2);
-          this.newUser.name = '';
-          this.newUser.email = '';
-          // Refresh the users list
-          this.fetchUsers();
-        } else {
-          const error: ErrorResponse = await response.json();
-          this.userResponse = 'Error: ' + error.error;
-        }
+        const newUser: User = await userService.addUser(this.newUser);
+        this.userResponse = 'User created successfully: ' + JSON.stringify(newUser, null, 2);
+        this.newUser.name = '';
+        this.newUser.email = '';
+        // Refresh the users list
+        this.fetchUsers();
       } catch (error: any) {
         this.userResponse = 'Error: ' + error.message;
       }
     },
-    // Search methods
+    
+    // Search API methods
     async searchFairyTales(this: AppData & AppMethods): Promise<void> {
       if (!this.searchQuery.trim()) {
         this.searchResponse = 'Please enter a search query';
@@ -158,26 +110,9 @@ createApp({
       this.searchResponse = null;
 
       try {
-        const response = await fetch('/api/search', {
-          method: 'POST',
-          headers: {
-            'Content-Type': 'application/json',
-          },
-          body: JSON.stringify({
-            query: this.searchQuery.trim(),
-            limit: 10,
-            caseSensitive: false
-          })
-        });
-
-        if (response.ok) {
-          const data: SearchResponse = await response.json();
-          this.searchResults = data.results;
-          this.searchResponse = `Found ${data.totalResults} results in ${data.searchTime}ms`;
-        } else {
-          const error: ErrorResponse = await response.json();
-          this.searchResponse = 'Error: ' + error.error;
-        }
+        const data = await searchService.searchFairyTales(this.searchQuery.trim(), 10, false);
+        this.searchResults = data.results;
+        this.searchResponse = `Found ${data.totalResults} results in ${data.searchTime}ms`;
       } catch (error: any) {
         this.searchResponse = 'Error: ' + error.message;
       } finally {
@@ -186,10 +121,7 @@ createApp({
     },
     async fetchSearchStats(this: AppData & AppMethods): Promise<void> {
       try {
-        const response = await fetch('/api/search/stats');
-        if (response.ok) {
-          this.searchStats = await response.json();
-        }
+        this.searchStats = await searchService.getSearchStats();
       } catch (error: any) {
         console.error('Error fetching search stats:', error);
       }
@@ -199,7 +131,7 @@ createApp({
       this.searchResults = [];
       this.searchResponse = null;
     },
-    highlightMatch(text: string, query: string): string {
+    highlightMatch(this: AppData & AppMethods, text: string, query: string): string {
       if (!query) return text;
       const regex = new RegExp(`(${query})`, 'gi');
       return text.replace(regex, '<mark>$1</mark>');

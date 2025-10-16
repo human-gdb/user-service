@@ -1,0 +1,21 @@
+<!-- Users Component Template -->
+<div class="api-section">
+    <h3>Users API</h3>
+    <button @click="fetchUsers">Get All Users</button>
+    
+    <div class="user-form">
+        <h4>Add New User</h4>
+        <input v-model="newUser.name" placeholder="Name" />
+        <input v-model="newUser.email" placeholder="Email" />
+        <button @click="addUser">Add User</button>
+    </div>
+    
+    <div v-if="users.length > 0" class="users-list">
+        <h4>Users:</h4>
+        <div v-for="user in users" :key="user.id" class="user-item">
+            <strong>{{ user.name }}</strong> - {{ user.email }}
+        </div>
+    </div>
+    
+    <div v-if="userResponse" class="response">{{ userResponse }}</div>
+</div>

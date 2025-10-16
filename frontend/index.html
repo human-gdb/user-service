@@ -4,99 +4,311 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Vue.js + Express.js App</title>
-    <link rel="stylesheet" href="/css/style.css">
-    <script src="https://unpkg.com/vue@3/dist/vue.global.prod.js"></script>
+    <!-- Vuetify CSS -->
+    <link href="https://cdn.jsdelivr.net/npm/vuetify@3.4.0/dist/vuetify.min.css" rel="stylesheet">
+    <!-- Material Design Icons -->
+    <link href="https://cdn.jsdelivr.net/npm/@mdi/font@7.x/css/materialdesignicons.min.css" rel="stylesheet">
+    <!-- Minimal global CSS for Vuetify overrides only -->
+    <link rel="stylesheet" href="/css/styles/global.css">
+    <script src="https://unpkg.com/vue@3/dist/vue.global.js"></script>
+    <script src="https://cdn.jsdelivr.net/npm/vuetify@3.4.0/dist/vuetify.min.js"></script>
 </head>
 <body>
     <div id="app">
-        <div class="container">
-            <h1>{{ title }}</h1>
-            
-            <div class="api-section">
-                <h3>Hello API</h3>
-                <button @click="fetchHello">Get Hello Message</button>
-                <div v-if="helloResponse" class="response">{{ helloResponse }}</div>
+        <v-app>
+            <!-- Navigation Drawer -->
+            <v-navigation-drawer
+                v-model="drawer"
+                :rail="false"
+                permanent
+                class="elevation-2"
+            >
+                <v-list density="compact" nav>
+                    <v-list-item class="px-2">
+                        <v-list-item-title class="text-h6">
+                            {{ title }}
+                        </v-list-item-title>
+                    </v-list-item>
+                    <v-divider class="my-2"></v-divider>
+                    <v-list-item
+                        v-for="item in navigationItems"
+                        :key="item.value"
+                        :value="item.value"
+                        :active="currentView === item.value"
+                        @click="selectView(item.value)"
+                        class="mb-1"
+                    >
+                        <template v-slot:prepend>
+                            <v-icon>{{ item.icon }}</v-icon>
+                        </template>
+                        <v-list-item-title>{{ item.title }}</v-list-item-title>
+                    </v-list-item>
+                </v-list>
+            </v-navigation-drawer>
+
+            <!-- App Bar -->
+            <v-app-bar
+                :elevation="1"
+                color="primary"
+                dark
+            >
+                <v-app-bar-nav-icon @click="toggleDrawer"></v-app-bar-nav-icon>
+                <v-toolbar-title>{{ navigationItems.find(item => item.value === currentView)?.title || 'Vue.js App' }}</v-toolbar-title>
+            </v-app-bar>
+
+            <!-- Main Content -->
+            <v-main>
+                <v-container fluid>
+                    <v-row justify="center">
+                        <v-col cols="12" md="10" lg="8">
+                            <v-card class="pa-6">
+                                <!-- Hello API Section -->
+                                <div v-if="currentView === 'hello'">
+                                    <v-card class="mb-6" variant="outlined">
+                                    <v-card-title class="text-h6">
+                                        <v-icon class="mr-2">mdi-api</v-icon>
+                                        Hello API
+                                    </v-card-title>
+                                    <v-card-text>
+                                        <v-btn 
+                                            color="primary" 
+                                            @click="fetchHello"
+                                            :loading="false"
+                                            class="mb-4"
+                                        >
+                                            <v-icon left>mdi-hand-wave</v-icon>
+                                            Get Hello Message
+                                        </v-btn>
+                                        <v-alert 
+                                            v-if="helloResponse" 
+                                            type="info" 
+                                            variant="tonal"
+                                            class="mt-4"
+                                        >
+                                            <pre class="text-caption font-family-monospace">{{ helloResponse }}</pre>
+                                        </v-alert>
+                                    </v-card-text>
+                                    </v-card>
             </div>
             
-            <div class="api-section">
-                <h3>Users API</h3>
-                <button @click="fetchUsers">Get All Users</button>
-                
-                <div class="user-form">
-                    <h4>Add New User</h4>
-                    <input v-model="newUser.name" placeholder="Name" />
-                    <input v-model="newUser.email" placeholder="Email" />
-                    <button @click="addUser">Add User</button>
-                </div>
-                
-                <div v-if="users.length > 0" class="users-list">
-                    <h4>Users:</h4>
-                    <div v-for="user in users" :key="user.id" class="user-item">
-                        <strong>{{ user.name }}</strong> - {{ user.email }}
-                    </div>
-                </div>
-                
-                <div v-if="userResponse" class="response">{{ userResponse }}</div>
-            </div>
-            
-            <div class="api-section">
-                <h3>Fairy Tale Search</h3>
-                <div v-if="searchStats" class="search-stats">
-                    <p><strong>{{ searchStats.totalTales }}</strong> fairy tales available from <a :href="searchStats.baseUrl" target="_blank">Grimm's Fairy Tales</a></p>
-                </div>
-                
-                <div class="search-form">
-                    <div class="search-input-group">
-                        <input 
-                            v-model="searchQuery" 
-                            @keyup.enter="searchFairyTales"
-                            placeholder="Search for words in fairy tales..." 
-                            :disabled="isSearching"
-                        />
-                        <button @click="searchFairyTales" :disabled="isSearching || !searchQuery.trim()">
-                            <span v-if="isSearching">Searching...</span>
-                            <span v-else>Search</span>
-                        </button>
-                        <button @click="clearSearch" class="clear-btn" :disabled="isSearching">Clear</button>
-                    </div>
-                </div>
-                
-                <div v-if="searchResponse" class="response">{{ searchResponse }}</div>
-                
-                <div v-if="searchResults.length > 0" class="search-results">
-                    <h4>Search Results:</h4>
-                    <div v-for="result in searchResults" :key="result.tale.id" class="search-result">
-                        <div class="result-header">
-                            <h5>{{ result.tale.title }}</h5>
-                            <span class="relevance-score">Relevance: {{ Math.round(result.relevanceScore) }}</span>
-                        </div>
-                        <div class="result-matches">
-                            <div v-for="(match, index) in result.matches.slice(0, 3)" :key="index" class="match-item">
-                                <div class="match-line">
-                                    <span class="line-number">Line {{ match.lineNumber }}:</span>
-                                    <span class="match-text" v-html="highlightMatch(match.line, searchQuery)"></span>
+                                <!-- Users API Section -->
+                                <div v-if="currentView === 'users'">
+                                    <v-card class="mb-6" variant="outlined">
+                                    <v-card-title class="text-h6">
+                                        <v-icon class="mr-2">mdi-account-group</v-icon>
+                                        Users API
+                                    </v-card-title>
+                                    <v-card-text>
+                                        <v-btn 
+                                            color="primary" 
+                                            @click="fetchUsers"
+                                            class="mb-4"
+                                        >
+                                            <v-icon left>mdi-download</v-icon>
+                                            Get All Users
+                                        </v-btn>
+                                        
+                                        <!-- Add User Form -->
+                                        <v-card variant="tonal" class="pa-4 mb-4">
+                                            <v-card-title class="text-h6">Add New User</v-card-title>
+                                            <v-form @submit.prevent="addUser">
+                                                <v-row>
+                                                    <v-col cols="12" md="6">
+                                                        <v-text-field
+                                                            v-model="newUser.name"
+                                                            label="Name"
+                                                            placeholder="Enter user name"
+                                                            variant="outlined"
+                                                            required
+                                                        ></v-text-field>
+                                                    </v-col>
+                                                    <v-col cols="12" md="6">
+                                                        <v-text-field
+                                                            v-model="newUser.email"
+                                                            label="Email"
+                                                            placeholder="Enter email address"
+                                                            type="email"
+                                                            variant="outlined"
+                                                            required
+                                                        ></v-text-field>
+                                                    </v-col>
+                                                </v-row>
+                                                <v-btn 
+                                                    type="submit" 
+                                                    color="success"
+                                                    :disabled="!newUser.name || !newUser.email"
+                                                >
+                                                    <v-icon left>mdi-plus</v-icon>
+                                                    Add User
+                                                </v-btn>
+                                            </v-form>
+                                        </v-card>
+                                        
+                                        <!-- Users List -->
+                                        <v-list v-if="users.length > 0" class="mb-4">
+                                            <v-list-subheader>Users ({{ users.length }})</v-list-subheader>
+                                            <v-list-item 
+                                                v-for="user in users" 
+                                                :key="user.id"
+                                                class="mb-2"
+                                            >
+                                                <template v-slot:prepend>
+                                                    <v-avatar color="primary" size="small">
+                                                        <v-icon>mdi-account</v-icon>
+                                                    </v-avatar>
+                                                </template>
+                                                <v-list-item-title>{{ user.name }}</v-list-item-title>
+                                                <v-list-item-subtitle>{{ user.email }}</v-list-item-subtitle>
+                                            </v-list-item>
+                                        </v-list>
+                                        
+                                        <v-alert 
+                                            v-if="userResponse" 
+                                            :type="userResponse.includes('Error') ? 'error' : 'success'"
+                                            variant="tonal"
+                                        >
+                                            {{ userResponse }}
+                                        </v-alert>
+                                    </v-card-text>
+                                    </v-card>
                                 </div>
-                                <div class="match-context">{{ match.context }}</div>
-                            </div>
-                            <div v-if="result.matches.length > 3" class="more-matches">
+                                
+                                <!-- Search Section -->
+                                <div v-if="currentView === 'search'">
+                                    <v-card class="mb-6" variant="outlined">
+                                    <v-card-title class="text-h6">
+                                        <v-icon class="mr-2">mdi-magnify</v-icon>
+                                        Fairy Tale Search
+                                    </v-card-title>
+                                    <v-card-text>
+                                        <v-alert 
+                                            v-if="searchStats" 
+                                            type="info" 
+                                            variant="tonal"
+                                            class="mb-4"
+                                        >
+                                            <strong>{{ searchStats.totalTales }}</strong> fairy tales available from 
+                                            <a :href="searchStats.baseUrl" target="_blank" class="text-decoration-none text-primary">Grimm's Fairy Tales</a>
+                                        </v-alert>
+                                        
+                                        <v-form @submit.prevent="searchFairyTales">
+                                            <v-row>
+                                                <v-col cols="12" md="8">
+                                                    <v-text-field
+                            v-model="searchQuery" 
+                                                        label="Search for words in fairy tales..."
+                                                        placeholder="Enter search terms"
+                                                        variant="outlined"
+                                                        :disabled="isSearching"
+                            @keyup.enter="searchFairyTales"
+                                                    ></v-text-field>
+                                                </v-col>
+                                                <v-col cols="12" md="4">
+                                                    <v-btn 
+                                                        type="submit"
+                                                        color="primary"
+                                                        :disabled="isSearching || !searchQuery.trim()"
+                                                        :loading="isSearching"
+                                                        block
+                                                    >
+                                                        <v-icon left>mdi-magnify</v-icon>
+                                                        {{ isSearching ? 'Searching...' : 'Search' }}
+                                                    </v-btn>
+                                                </v-col>
+                                            </v-row>
+                                            <v-btn 
+                                                @click="clearSearch" 
+                                                color="secondary"
+                            :disabled="isSearching"
+                                                class="mt-2"
+                                            >
+                                                <v-icon left>mdi-close</v-icon>
+                                                Clear
+                                            </v-btn>
+                                        </v-form>
+                                        
+                                        <v-alert 
+                                            v-if="searchResponse" 
+                                            :type="searchResponse.includes('Error') ? 'error' : 'info'"
+                                            variant="tonal"
+                                            class="mt-4"
+                                        >
+                                            {{ searchResponse }}
+                                        </v-alert>
+                                        
+                                        <!-- Search Results -->
+                                        <div v-if="searchResults.length > 0" class="mt-4">
+                                            <h4 class="text-h6 mb-4">Search Results ({{ searchResults.length }})</h4>
+                                            <v-card 
+                                                v-for="result in searchResults" 
+                                                :key="result.tale.id"
+                                                class="mb-4"
+                                                variant="outlined"
+                                            >
+                                                <v-card-title class="d-flex justify-space-between align-center">
+                                                    <span>{{ result.tale.title }}</span>
+                                                    <v-chip color="success" size="small">
+                                                        Relevance: {{ Math.round(result.relevanceScore) }}
+                                                    </v-chip>
+                                                </v-card-title>
+                                                <v-card-text>
+                                                    <div v-for="(match, index) in result.matches.slice(0, 3)" :key="index" class="mb-3">
+                                                        <v-card variant="tonal" class="pa-3">
+                                                            <div class="text-caption text-grey-darken-1 mb-1">Line {{ match.lineNumber }}:</div>
+                                                            <div v-html="highlightMatch(match.line, searchQuery)" class="font-family-monospace text-body-2"></div>
+                                                            <div class="text-caption text-grey-darken-1 mt-1">{{ match.context }}</div>
+                                                        </v-card>
+                        </div>
+                                                    <div v-if="result.matches.length > 3" class="text-center text-grey-darken-1">
                                 ... and {{ result.matches.length - 3 }} more matches
                             </div>
-                        </div>
-                        <div class="result-actions">
-                            <a :href="result.tale.url" target="_blank" class="view-tale-btn">View Full Tale</a>
-                        </div>
-                    </div>
-                </div>
-            </div>
-            
-            <div class="api-section">
-                <h3>API Documentation</h3>
-                <p>View the complete API documentation with Swagger UI:</p>
-                <a href="/swagger" target="_blank" style="display: inline-block; background: #28a745; color: white; padding: 10px 20px; text-decoration: none; border-radius: 5px;">Open Swagger UI</a>
-            </div>
-        </div>
+                                                </v-card-text>
+                                                <v-card-actions>
+                                                    <v-btn 
+                                                        :href="result.tale.url" 
+                                                        target="_blank" 
+                                                        color="primary"
+                                                        variant="outlined"
+                                                    >
+                                                        <v-icon left>mdi-open-in-new</v-icon>
+                                                        View Full Tale
+                                                    </v-btn>
+                                                </v-card-actions>
+                                            </v-card>
+                                        </div>
+                                    </v-card-text>
+                                    </v-card>
+                                </div>
+                                
+                                <!-- API Documentation Section -->
+                                <div v-if="currentView === 'docs'">
+                                    <v-card variant="outlined">
+                                    <v-card-title class="text-h6">
+                                        <v-icon class="mr-2">mdi-book-open-variant</v-icon>
+                                        API Documentation
+                                    </v-card-title>
+                                    <v-card-text>
+                                        <p class="mb-4">View the complete API documentation with Swagger UI:</p>
+                                        <v-btn 
+                                            href="/swagger" 
+                                            target="_blank" 
+                                            color="success"
+                                            size="large"
+                                        >
+                                            <v-icon left>mdi-api</v-icon>
+                                            Open Swagger UI
+                                        </v-btn>
+                                    </v-card-text>
+                                    </v-card>
+                                </div>
+                            </v-card>
+                        </v-col>
+                    </v-row>
+                </v-container>
+            </v-main>
+        </v-app>
     </div>
 
-    <script src="/js/app.js"></script>
+    <script src="/js/app-bundled.js"></script>
 </body>
 </html>

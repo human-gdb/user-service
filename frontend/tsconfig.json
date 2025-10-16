@@ -2,15 +2,17 @@
   "compilerOptions": {
     "outDir": "../.build/frontend",
     "rootDir": ".",
-    "module": "ES2020",
+    "module": "None",
     "target": "ES2020",
     "lib": ["DOM", "ES2020"],
     "strict": false,
     "esModuleInterop": false,
+    "moduleResolution": "node",
     "skipLibCheck": true,
     "removeComments": false,
     "sourceMap": true
   },
+  "files": ["app-bundled.ts"],
   "include": ["**/*.ts"],
   "exclude": ["node_modules", "../../node_modules/@types/node"]
 }
